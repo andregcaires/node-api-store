@@ -1,22 +1,22 @@
 'use strict'
 
-const mongoose = require('mongoose');
-const Product = mongoose.model('Product');
 const ValidationContract = require('../validators/fluent-validator')
 const repository = require('../repositories/product-repository')
 
-exports.getAll = (req, res, next) => {
-    repository.getAll()
-    .then(data => {
-        res.status(200).send({ data });
-    })
-    .catch(err => {
-        res.status(400).send({ err });
-    });
+exports.getAll = async (req, res, next) => {
+    const data = await repository.getAll();
+    try {
+        res.status(200).send(data);
+    }
+    catch (err) {
+        res.status(500).send({
+            mensagem: "Erro ao processar requisição"
+        });
+    }
 }
 
 exports.getById = (req, res, next) => {
-    repository.findById(req.params.id)
+    repository.getById(req.params.id)
     .then(data => {
         res.status(200).send({ data });
     })
@@ -88,7 +88,7 @@ exports.put = (req, res, next) => {
 };
 
 exports.delete = (req, res, next) => {
-    repository.delete(req.body.id);
+    repository.delete(req.body.id)
     .then(x => {
         res.status(200).send({
             message: "Produto removido com sucesso"

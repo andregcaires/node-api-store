@@ -3,15 +3,14 @@
 const mongoose = require('mongoose');
 const Product = mongoose.model('Product');
 
-exports.getAll = () => {
-    return Product.find({}, 'title slug price tags');
+// exemplo com uso de async / await
+exports.getAll = async () => {
+    const res = await Product.find({}, 'title slug price tags');
+    return res;
 }
 
 exports.getById = (id) => {
-    return Product.findById({
-        slug: id,
-        active:true
-    }, 'title slug price tags');
+    return Product.findById(mongoose.Types.ObjectId.createFromHexString(id), 'title slug price tags');
 }
 
 exports.getByTag = (tags) => {

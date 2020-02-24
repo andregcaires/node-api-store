@@ -13,7 +13,7 @@ server.listen(port);
 
 // handler para tratamento de erros
 server.on('error', function(error) {
-    console.log('Erro');
+    console.log('Erro: '+ error);
 });
 
 server.on('listening', onListening);
