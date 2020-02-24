@@ -2,6 +2,8 @@
 
 const ValidationContract = require('../validators/fluent-validator')
 const repository = require('../repositories/customer-repository')
+const md5 = require('md5');
+const emailService = require('../services/email-service');
 
 exports.getAll = async (req, res, next) => {
     const data = await repository.getAll();
@@ -38,17 +40,25 @@ exports.post = (req, res, next) => {
         return;
     }
 
-    repository.create(req.body)
-        .then(x => {
-            res.status(201).send({
-                message:'Cliente cadastrado com sucesso'
-            });
-        })
-        .catch(err => {
-            res.status(400).send({
-                message: 'Erro ao cadastrar cliente',
-                data: err
-            });
+    repository.create({
+        name: req.body.name,
+        email: req.body.email,
+        password: md5(req.body.password + global.SALT_KEY)
+    })
+    .then(x => {
+
+        emailService.send(req.body.email, 
+            'Bem vindo à Node Store!',
+            global.EMAIL_TMPL.replace('{0}', req.body.name));
+
+        res.status(201).send({
+            message:'Cliente cadastrado com sucesso'
         });
-    
+    })
+    .catch(err => {
+        res.status(400).send({
+            message: 'Erro ao cadastrar cliente',
+            data: err
+        });
+    });    
 };
