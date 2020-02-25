@@ -3,6 +3,7 @@
 const ValidationContract = require('../validators/fluent-validator')
 const repository = require('../repositories/order-repository')
 const guid = require('guid');
+const authService = require('../services/auth-service');
 
 exports.getAll = async (req, res, next) => {
     const data = await repository.getAll();
@@ -28,14 +29,17 @@ exports.getById = (req, res, next) => {
 
 exports.post = (req, res, next) => {
 
+    // recupera o token
+    let token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+    // decodifica o token
+    let dataToken = authService.decodeToken(token);
+
     let data = {
-        customer: req.body.customer,
+        customer: dataToken.id,
         number: guid.raw().substring(0,6),
         items: req.body.items
     };
-
-    // gera guid com 6 caracteres
-    data.number = guid.raw().substring(0,6);
 
     if(data.items.length == 0) {
         res.status(400).send("Favor informar itens no pedido").end();

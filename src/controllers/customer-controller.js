@@ -80,12 +80,50 @@ exports.authenticate = async (req, res, next) => {
         }
 
         let token = await authService.generateToken({ 
+            id: customer._id,
             email: customer.email, 
             password: customer.password 
         });
     
         res.status(201).send({
             token: token,
+            data: {
+                email: customer.email, 
+                name: customer.name
+            }
+        });
+    }
+    catch (err) {
+        res.status(401).send({
+            message: "Não autenticado: ",
+            data: err
+        });
+    }
+};
+
+exports.refreshToken = async (req, res, next) => {
+
+    try {
+        const token = req.body.token || req.query.token || req.headers['x-access-token'];
+        const data = await this.decodeToken(token);
+
+        const customer = await repository.getById(data.id);
+
+        if (!customer) {
+            res.status(404).send({
+                message: "Usuário não encontrado"
+            });
+            return;
+        }
+
+        let newToken = await authService.generateToken({ 
+            id: customer._id,
+            email: customer.email, 
+            password: customer.password 
+        });
+    
+        res.status(201).send({
+            token: newToken,
             data: {
                 email: customer.email, 
                 name: customer.name
