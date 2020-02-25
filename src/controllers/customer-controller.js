@@ -44,7 +44,8 @@ exports.post = (req, res, next) => {
     repository.create({
         name: req.body.name,
         email: req.body.email,
-        password: md5(req.body.password + global.SALT_KEY)
+        password: md5(req.body.password + global.SALT_KEY),
+        roles: ['user']
     })
     .then(x => {
 
@@ -82,7 +83,8 @@ exports.authenticate = async (req, res, next) => {
         let token = await authService.generateToken({ 
             id: customer._id,
             email: customer.email, 
-            password: customer.password 
+            password: customer.password,
+            roles: customer.roles
         });
     
         res.status(201).send({
@@ -119,7 +121,8 @@ exports.refreshToken = async (req, res, next) => {
         let newToken = await authService.generateToken({ 
             id: customer._id,
             email: customer.email, 
-            password: customer.password 
+            password: customer.password,
+            roles: customer.roles
         });
     
         res.status(201).send({
