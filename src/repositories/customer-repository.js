@@ -17,3 +17,11 @@ exports.create = (data) => {
     let customer = new Customer(data);
     return customer.save()
 }
+
+exports.authenticate = async (data) => {
+    const res = await Customer.findOne({
+        email: data.email,
+        password: data.password
+    });
+    return res;
+}

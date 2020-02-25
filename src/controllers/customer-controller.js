@@ -4,6 +4,7 @@ const ValidationContract = require('../validators/fluent-validator')
 const repository = require('../repositories/customer-repository')
 const md5 = require('md5');
 const emailService = require('../services/email-service');
+const authService = require('../services/auth-service');
 
 exports.getAll = async (req, res, next) => {
     const data = await repository.getAll();
@@ -61,4 +62,40 @@ exports.post = (req, res, next) => {
             data: err
         });
     });    
+};
+
+exports.authenticate = async (req, res, next) => {
+
+    try {
+        const customer = await repository.authenticate({
+            email: req.body.email,
+            password: md5(req.body.password + global.SALT_KEY)
+        });
+
+        if (!customer) {
+            res.status(404).send({
+                message: "Usuário ou senha inválidos"
+            });
+            return;
+        }
+
+        let token = await authService.generateToken({ 
+            email: customer.email, 
+            password: customer.password 
+        });
+    
+        res.status(201).send({
+            token: token,
+            data: {
+                email: customer.email, 
+                name: customer.name
+            }
+        });
+    }
+    catch (err) {
+        res.status(401).send({
+            message: "Não autenticado: ",
+            data: err
+        });
+    }
 };
